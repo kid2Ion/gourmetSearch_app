@@ -16,7 +16,7 @@ type Urls struct {
 	Pc string `xml:"pc"`
 }
 
-func Parse(xmlBytes []byte) ([]Shop, error) {
+func MyParse(xmlBytes []byte) ([]Shop, error) {
 	var rs Results
 	if err := xml.Unmarshal(xmlBytes, &rs); err != nil {
 		return nil, err

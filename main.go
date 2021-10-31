@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"gourmetSearch_app/parse"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"text/template/parse"
 
 	"github.com/labstack/echo"
 )
@@ -22,7 +22,8 @@ func (g *GourmetSearcher) SearchGourmet(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	shop, err := parse.Parse(xml)
+	// shop, err := parse.Parse(xml)
+	shop, err := parse.MyParse(xml)
 	if err != nil {
 		return err
 	}
