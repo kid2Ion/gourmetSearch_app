@@ -2,11 +2,16 @@ package main
 
 import (
 	"fmt"
-	"gourmetSearch_app/parse"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/hiroki-kondo-git/gourmetSearch_app/db"
+
+	"github.com/hiroki-kondo-git/gourmetSearch_app/parse"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 
 	"github.com/labstack/echo"
 )
@@ -18,17 +23,24 @@ type GourmetSearcher struct {
 func (g *GourmetSearcher) SearchGourmet(ctx echo.Context) error {
 	keyWord := ctx.QueryParam("keyword")
 
-	xml, err := g.callApi(keyWord)
-	if err != nil {
-		return err
+	//sqlite検索
+	shops := db.SearchShopCache(keyWord)
+	if len(shops) != 0 {
+		return ctx.JSON(http.StatusOK, shops)
+	} else {
+		// apiから取得
+		xml, err := g.callApi(keyWord)
+		if err != nil {
+			return err
+		}
+		shop, err := parse.MyParse(xml)
+		if err != nil {
+			return err
+		}
+		//cacheに書き込む
+		// db.CreateShopCache(keyWord, shop)
+		return ctx.JSON(http.StatusOK, shop)
 	}
-	// shop, err := parse.Parse(xml)
-	shop, err := parse.MyParse(xml)
-	if err != nil {
-		return err
-	}
-
-	return ctx.JSON(http.StatusOK, shop)
 }
 
 func (g *GourmetSearcher) callApi(keyWord string) ([]byte, error) {
@@ -54,6 +66,12 @@ func main() {
 		log.Fatalf("usage: %s Apikey", os.Args[0])
 	}
 	apiKey := os.Args[1]
+	// Migrate the schema
+	shopdb, err := gorm.Open(sqlite.Open("shop.db"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+	shopdb.AutoMigrate(&db.ShopCache{})
 	searcher := &GourmetSearcher{apikey: apiKey}
 	e := echo.New()
 	e.Static("/", "vue/dist/")
