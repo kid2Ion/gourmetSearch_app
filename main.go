@@ -8,8 +8,6 @@ import (
 	"os"
 	"text/template/parse"
 
-	// "text/template/parse"
-
 	"github.com/labstack/echo"
 )
 

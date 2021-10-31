@@ -1,4 +1,4 @@
-module github.com/hiroki-kondo-git/gourmetSearch_api.git
+module github.com/hiroki-kondo-git/gourmetSearch_app.git
 
 go 1.13
 
