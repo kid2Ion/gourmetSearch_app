@@ -14,7 +14,7 @@
       <input @click="getShopList" type="button" value="取得">
       <div class="list_container">
         <article v-for="sh in shops" :key="sh.Name" class="shop_list">
-          <a :href="sh.Urls.Pc" class="item" target="_blank" rel="noopener noreferrer">
+          <a :href="sh.Urls" class="item" target="_blank" rel="noopener noreferrer">
             <div class="item_container">
               <div class="item_logo">
                 <img :src="sh.LogoImage" alt="">
