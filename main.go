@@ -9,6 +9,7 @@ import (
 
 	"github.com/hiroki-kondo-git/gourmetSearch_app/db"
 
+	"github.com/ChimeraCoder/anaconda"
 	"github.com/hiroki-kondo-git/gourmetSearch_app/parse"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -68,7 +69,7 @@ func (g *GourmetSearcher) callApi(keyWord string) ([]byte, error) {
 
 func main() {
 	// コマンドライン第二引数にapikey
-	if len(os.Args) != 2 {
+	if len(os.Args) != 6 {
 		log.Fatalf("usage: %s Apikey", os.Args[0])
 	}
 	apiKey := os.Args[1]
@@ -83,5 +84,72 @@ func main() {
 	e := echo.New()
 	e.Static("/", "vue/dist/")
 	e.GET("/keyword", searcher.SearchGourmet)
+	e.GET("/twitter", serach)
 	e.Logger.Fatal(e.Start(":8080"))
 }
+
+// ここからtwitter検索コード
+func serach(ctx echo.Context) error {
+	keyWord := ctx.QueryParam("keyword")
+	api := connectTwitterApi()
+	// 検索 [ライトコード]
+	searchResult, _ := api.GetSearch(`"`+keyWord+`"`, nil)
+
+	tweetUrls := make([]*TweetUrl, 0)
+
+	for _, data := range searchResult.Statuses {
+		tweet := new(Tweet)
+		tweetUrl := new(TweetUrl)
+		tweet.Text = data.FullText
+		tweet.User.IdStr = data.User.IdStr
+		tweet.User.Name = data.User.Name
+		tweet.Id = data.Id
+		tweetUrl.Url = fmt.Sprintf("https://twitter.com/%s/status/%d", tweet.User.IdStr, tweet.Id)
+		tweetUrls = append(tweetUrls, tweetUrl)
+	}
+	fmt.Println(tweetUrls)
+	return ctx.JSON(http.StatusOK, tweetUrls)
+}
+
+func connectTwitterApi() *anaconda.TwitterApi {
+	// Json読み込み
+	// raw, error := ioutil.ReadFile("twitterAccount.json")
+	// if error != nil {
+	// 	fmt.Println(error.Error())
+	// 	return nil
+	// }
+
+	// var twitterAccount TwitterAccount
+	// // 構造体にセット
+	// json.Unmarshal(raw, &twitterAccount)
+
+	// return anaconda.NewTwitterApiWithCredentials(twitterAccount.AccessToken, twitterAccount.AccessTokenSecret, twitterAccount.ConsumerKey, twitterAccount.ConsumerSecret)
+	// 認証
+	return anaconda.NewTwitterApiWithCredentials(os.Args[2], os.Args[3], os.Args[4], os.Args[5])
+}
+
+// TwitterAccount はTwitterの認証用の情報
+// type TwitterAccount struct {
+// 	AccessToken       string `json:"accessToken"`
+// 	AccessTokenSecret string `json:"accessTokenSecret"`
+// 	ConsumerKey       string `json:"consumerKey"`
+// 	ConsumerSecret    string `json:"consumerSecret"`
+// }
+
+// Tweet はツイートの情報
+type Tweet struct {
+	User User   `json:"user"`
+	Text string `json:"text"`
+	Id   int64  `json:"id"`
+}
+
+type User struct {
+	IdStr string `json:"id_str"`
+	Name  string `json:"name"`
+}
+
+type TweetUrl struct {
+	Url string
+}
+
+type TweetUrls *[]TweetUrl
