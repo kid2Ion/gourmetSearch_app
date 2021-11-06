@@ -2,12 +2,13 @@
   <div id="app">
     <section class="container">
       <myheader></myheader>
+      <p class="FV_img"><img src="../media/fv.jpeg" alt=""></p>
       <h1>グルメ検索</h1>
       <p v-if="keyword.length > 0">
         {{ keyword }}
       </p>
       <p v-else>
-        文字を入力してください
+        店名や地名、キーワードを入力してください
       </p>
       <input type="text" v-model="keyword">
       <button @click="clear()">clear</button>
@@ -31,8 +32,8 @@
           </article>
         </div>
         <div class="side_container">
-          <div v-for="tw in tweets" :key="tw.Url">
-            <link-prevue :url="tw.Url"></link-prevue>
+          <div v-for="tw in tweets" :key="tw.Url" class="tweet_items">
+            <link-prevue :url="tw.Url" class="tweet_item_list"></link-prevue>
           </div>
         </div>
       </div>
@@ -99,10 +100,21 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 }
+.container {
+  width: 100%;
+}
+.FV_img {
+  width: 90%;
+  display: inline-block;
+}
+.FV_img > img {
+  width: 100%;
+  margin: 0 auto;
+}
 .list_container {
   display: flex;
   flex-wrap: wrap;
-  width: 60%;
+  width: 50%;
 }
 .shop_list {
   width: 100%;
@@ -118,9 +130,19 @@ export default {
 }
 .main_container {
   display: flex;
+  margin-top: 2rem;
 }
 .side_container {
+  width: 50%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+.tweet_items {
   width: 40%;
+}
+.tweet_item_list > div > div {
+  width: 100% !important;
 }
 
 </style>
