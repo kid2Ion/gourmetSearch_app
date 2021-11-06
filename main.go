@@ -94,15 +94,16 @@ func main() {
 
 // ここからtwitter検索コード
 func serach(ctx echo.Context) error {
+	// twitter検索ワードをフロントから受け取る
 	keyWord := ctx.QueryParam("keyword")
 	api := connectTwitterApi()
-
+	// twitterAPI
 	v := url.Values{}
 	v.Set("count", "10")
 	searchResult, _ := api.GetSearch(keyWord, v)
 
 	tweetUrls := make([]*TweetUrl, 0)
-
+	// 構造体に格納
 	for _, data := range searchResult.Statuses {
 		tweet := new(Tweet)
 		tweetUrl := new(TweetUrl)
@@ -113,6 +114,7 @@ func serach(ctx echo.Context) error {
 		tweetUrl.Url = fmt.Sprintf("https://twitter.com/%s/status/%d", tweet.User.IdStr, tweet.Id)
 		tweetUrls = append(tweetUrls, tweetUrl)
 	}
+	// 検索結果が10件以下だと部分一致で再検索（10件にする）
 	if len(tweetUrls) < 10 {
 		a := strconv.Itoa(10 - len(tweetUrls))
 		v.Set("count", a)
@@ -153,4 +155,5 @@ type TweetUrl struct {
 	Url string
 }
 
+// 最終的にフロントに返すtweetのurl
 type TweetUrls *[]TweetUrl

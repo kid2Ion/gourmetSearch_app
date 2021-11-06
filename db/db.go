@@ -9,7 +9,7 @@ import (
 type ShopCache struct {
 	gorm.Model
 	Keyword   string
-	ID        string
+	ShopID    string
 	Name      string
 	LogoImage string
 	Urls      string
@@ -36,7 +36,7 @@ func CreateShopCache(keyword string, shops []parse.Shop) {
 	for _, shop := range shops {
 		shopCache := ShopCache{}
 		shopCache.Keyword = keyword
-		shopCache.ID = shop.ID
+		shopCache.ShopID = shop.ID
 		shopCache.Name = shop.Name
 		shopCache.LogoImage = shop.LogoImage
 		shopCache.Urls = shop.Urls.Pc
