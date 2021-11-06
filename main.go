@@ -5,7 +5,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+
+	"strconv"
+	"strings"
 
 	"github.com/hiroki-kondo-git/gourmetSearch_app/db"
 
@@ -50,7 +54,7 @@ func (g *GourmetSearcher) SearchGourmet(ctx echo.Context) error {
 
 func (g *GourmetSearcher) callApi(keyWord string) ([]byte, error) {
 	// api叩くURI作成
-	url := fmt.Sprintf("https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?key=%s&keyword=%s&count=20", g.apikey, keyWord)
+	url := fmt.Sprintf("https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?key=%s&keyword=%s&count=100&order=4", g.apikey, keyWord)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -92,8 +96,10 @@ func main() {
 func serach(ctx echo.Context) error {
 	keyWord := ctx.QueryParam("keyword")
 	api := connectTwitterApi()
-	// 検索 [ライトコード]
-	searchResult, _ := api.GetSearch(`"`+keyWord+`"`, nil)
+
+	v := url.Values{}
+	v.Set("count", "10")
+	searchResult, _ := api.GetSearch(keyWord, v)
 
 	tweetUrls := make([]*TweetUrl, 0)
 
@@ -107,34 +113,29 @@ func serach(ctx echo.Context) error {
 		tweetUrl.Url = fmt.Sprintf("https://twitter.com/%s/status/%d", tweet.User.IdStr, tweet.Id)
 		tweetUrls = append(tweetUrls, tweetUrl)
 	}
-	fmt.Println(tweetUrls)
+	if len(tweetUrls) < 10 {
+		a := strconv.Itoa(10 - len(tweetUrls))
+		v.Set("count", a)
+		searchResult, _ = api.GetSearch(strings.ReplaceAll(keyWord, " ", " OR "), v)
+		for _, data := range searchResult.Statuses {
+			tweet := new(Tweet)
+			tweetUrl := new(TweetUrl)
+			tweet.Text = data.FullText
+			tweet.User.IdStr = data.User.IdStr
+			tweet.User.Name = data.User.Name
+			tweet.Id = data.Id
+			tweetUrl.Url = fmt.Sprintf("https://twitter.com/%s/status/%d", tweet.User.IdStr, tweet.Id)
+			tweetUrls = append(tweetUrls, tweetUrl)
+		}
+	}
+
 	return ctx.JSON(http.StatusOK, tweetUrls)
 }
 
 func connectTwitterApi() *anaconda.TwitterApi {
-	// Json読み込み
-	// raw, error := ioutil.ReadFile("twitterAccount.json")
-	// if error != nil {
-	// 	fmt.Println(error.Error())
-	// 	return nil
-	// }
-
-	// var twitterAccount TwitterAccount
-	// // 構造体にセット
-	// json.Unmarshal(raw, &twitterAccount)
-
-	// return anaconda.NewTwitterApiWithCredentials(twitterAccount.AccessToken, twitterAccount.AccessTokenSecret, twitterAccount.ConsumerKey, twitterAccount.ConsumerSecret)
 	// 認証
 	return anaconda.NewTwitterApiWithCredentials(os.Args[2], os.Args[3], os.Args[4], os.Args[5])
 }
-
-// TwitterAccount はTwitterの認証用の情報
-// type TwitterAccount struct {
-// 	AccessToken       string `json:"accessToken"`
-// 	AccessTokenSecret string `json:"accessTokenSecret"`
-// 	ConsumerKey       string `json:"consumerKey"`
-// 	ConsumerSecret    string `json:"consumerSecret"`
-// }
 
 // Tweet はツイートの情報
 type Tweet struct {
