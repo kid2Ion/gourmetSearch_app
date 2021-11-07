@@ -73,10 +73,14 @@ func (g *GourmetSearcher) callApi(keyWord string) ([]byte, error) {
 
 func main() {
 	// コマンドライン第二引数にapikey
-	if len(os.Args) != 6 {
-		log.Fatalf("usage: %s Apikey", os.Args[0])
+	// if len(os.Args) != 6 {
+	// 	log.Fatalf("usage: %s Apikey", os.Args[0])
+	// }
+	apiKey := os.Getenv("GOURMET_API_KEY")
+	if apiKey == "" {
+		log.Fatal("gourmetAPI key is not defined")
 	}
-	apiKey := os.Args[1]
+
 	// db開く
 	shopdb, err := gorm.Open(sqlite.Open("shop.db"), &gorm.Config{})
 	if err != nil {
@@ -136,7 +140,7 @@ func serach(ctx echo.Context) error {
 
 func connectTwitterApi() *anaconda.TwitterApi {
 	// 認証
-	return anaconda.NewTwitterApiWithCredentials(os.Args[2], os.Args[3], os.Args[4], os.Args[5])
+	return anaconda.NewTwitterApiWithCredentials(os.Getenv("TWITTER_ACCESTOKEN"), os.Getenv("TWITTER_ACCESTOKENSECRET"), os.Getenv("TWITTER_COSUMERKEY"), os.Getenv("TWITTER_COSUMERKEYSECRET"))
 }
 
 // Tweet はツイートの情報
