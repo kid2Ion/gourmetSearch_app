@@ -81,6 +81,9 @@ func main() {
 		log.Fatal("gourmetAPI key is not defined")
 	}
 
+	port := os.Getenv("PORT")
+	bindAddr := fmt.Sprintf(":%s", port)
+
 	// db開く
 	shopdb, err := gorm.Open(sqlite.Open("shop.db"), &gorm.Config{})
 	if err != nil {
@@ -93,7 +96,7 @@ func main() {
 	e.Static("/", "vue/dist/")
 	e.GET("/keyword", searcher.SearchGourmet)
 	e.GET("/twitter", serach)
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(bindAddr))
 }
 
 // ここからtwitter検索コード
