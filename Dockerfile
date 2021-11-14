@@ -12,4 +12,4 @@ FROM ubuntu:20.04
 
 COPY --from=builder /opt /opt
 
-ENTRYPOINT [ "/opt/gourmetSearch_app" ]
+ENTRYPOINT ["/opt/gourmetSearch_app"]
