@@ -10,6 +10,8 @@ ENTRYPOINT ["/opt/gourmetSearch_app"]
 
 FROM ubuntu:20.04
 
+WORKDIR /opt
+
 COPY --from=builder /opt /opt
 
 ENTRYPOINT ["/opt/gourmetSearch_app"]
