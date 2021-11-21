@@ -65,7 +65,7 @@ export default {
       this.keyword = ''
     },
     getShopList () {
-      this.axios.get('http://localhost:8080/keyword?keyword='+this.keyword)
+      this.axios.get('http://localhost:'+process.env.PORT+'/keyword?keyword='+this.keyword)
       .then(function(response){
         this.shops = response.data
         console.log(response)
@@ -77,7 +77,7 @@ export default {
     getTweets (index) {
       let a = this.shops[index].Name
       console.log(a)
-      this.axios.get('http://localhost:8080/twitter?keyword='+a)
+      this.axios.get('http://localhost:'+process.env.PORT+'/twitter?keyword='+a)
       .then(function(response){
         this.tweets = response.data
         console.log(response)
